@@ -4,16 +4,19 @@ import socket
 import string
 import re
 import os
+import time
 
 import threads
 
-class Bot(object):
+class SpamBot(object):
   def __init__(self, host, **kwargs):
     '''
     Initializes a new pyrc.Bot.
     '''
-    nick = "PyrcBot" if self.__class__ == Bot else self.__class__.__name__
+    nick = "PyrcBot" if self.__class__ == SpamBot else self.__class__.__name__
     password = os.environ.get('PASSWORD', None)
+
+    self.tick = int(time.time())
 
     self.config = dict(kwargs)
     self.config.setdefault('host', host)
@@ -35,6 +38,12 @@ class Bot(object):
 
     self.add_listeners()
     self.addhooks()
+    
+    #self.socket.send('THIS IS A TEST LOLOLO' + "\r\n")
+
+    #print self.tick
+    #if self.tick % 21 == 0: 
+    #  self.message(self,'bev-a-tron','hahaha')
 
   def message(self, recipient, s):
     "High level interface to sending an IRC message."
@@ -62,6 +71,7 @@ class Bot(object):
     A new line is defined as ending in \r\n in the RFC, but some servers
     separate by \n. This script takes care of both.
     """
+
     while True:
       self._inbuffer = self._inbuffer + self.socket.recv(1024)
       # Some IRC servers disregard the RFC and split lines by \n rather than \r\n.
@@ -75,12 +85,32 @@ class Bot(object):
         print line
         self.run_listeners(line)
 
+      self.tick = int(time.time())
+      print self.tick
+
+      print 'LINE IS: ',line 
+      print self.tick/2
+      #will get printed any time anybody does anything     
+      if self.tick%5 == 0: 
+        name = re.match(r"^:([a-zA-Z0-9_-]+)", line).group(1)
+        print 'IN THIS LOOP: (name): ', name
+        self.message('#hackerschool','lol, %s!'%(name))
+
+      if self.tick%7 == 0: 
+        name = re.match(r"^:([a-zA-Z0-9_-]+)", line).group(1)
+        print 'IN THIS LOOP: (name): ', name
+        self.message('#hackerschool',"%s, that's a brilliant observation!"%(name))
+
+
   def run_listeners(self, line):
     """
     Each listener's associated regular expression is matched against raw IRC
     input. If there is a match, the listener's associated function is called
     with all the regular expression's matched subgroups.
     """
+
+    list_of_words = ['idiot','622','740','cookie']
+
     for regex, callbacks in self.listeners.iteritems():
       match = re.match(regex, line)
 
@@ -109,14 +139,28 @@ class Bot(object):
   def receivemessage(self, channel, nick, message):
     self.parsecommand(channel, message)
 
+
   def parsecommand(self, channel, message):
     name = self.name_used(message)
 
     if not name:
       return
-
+    print 'parsecommand message1: ',message
+    #print 'PARSECOMMAND: (NAME): ',name
+    print 'parsecommand name: ', name
     _,_,message = message.partition(name)
+    #print 'PARSECOMMAND: (MESSAGE): ',message
+    t = re.match(r'^[,:]?\s+(.*)', message)
+    print 'parsecommand message: ', message
+    print 'parsecommand: ', t
+    print 'parsecommand type: ', t.group(0)
     command = re.match(r'^[,:]?\s+(.*)', message).group(1)
+    #print 'PARSECOMMAND: (COMMAND): ', command
+
+    #name = re.match(r'^:(.*)![.*]',message).group(1)
+    #command = re.match(r'^[,:]?\s+(.*)', message).group(1)
+    #print 'GET_TARGET (NAME): ', name
+
     for command_func in self._commands:
       match = command_func._matcher.search(command)
       if match:
@@ -142,6 +186,8 @@ class Bot(object):
       if name_regex.match(message):
         return name_regex.match(message).group(1)
 
+    #print 'NAME_USED: (this is the name): ', name
+
     return None
 
   def join(self, *channels):
@@ -149,6 +195,7 @@ class Bot(object):
 
   def cmd(self, raw_line):
     print "> %s" % raw_line
+    #print 'THIS IS INSIDE CMD'
     self.socket.send(raw_line + "\r\n")
 
   def _connect(self):
@@ -156,7 +203,6 @@ class Bot(object):
     self.socket = socket.socket()
     self.socket.connect((self.config['host'], self.config['port']))
     self.cmd("NICK %s" % self.config['nick'])
-
     self.cmd("USER %s %s bla :%s" %
         (self.config['ident'], self.config['host'], self.config['realname']))
 
@@ -184,6 +230,7 @@ class Bot(object):
     self.cmd("PONG :%s" % host)
 
   def _privmsg(self, nick, channel, message):
+    print '_privmsg (nick): ', nick
     self.receivemessage(channel, nick, message)
 
   def _invite(self, inviter, channel):
