@@ -89,18 +89,49 @@ class SpamBot(object):
       print self.tick
 
       print 'LINE IS: ',line 
-      print self.tick/2
-      #will get printed any time anybody does anything     
-      if self.tick%5 == 0: 
-        name = re.match(r"^:([a-zA-Z0-9_-]+)", line).group(1)
-        print 'IN THIS LOOP: (name): ', name
-        self.message('#hackerschool','lol, %s!'%(name))
+      #print self.tick/2
+      #will get printed any time anybody does anything
+      freq = 551
+      mult = 2
+      channel='#hackerschool'
 
-      if self.tick%7 == 0: 
-        name = re.match(r"^:([a-zA-Z0-9_-]+)", line).group(1)
+      match = re.match(r"^:*([a-zA-Z0-9_-]+)!.*", line)
+      if match:
+        name = re.match(r"^:*([a-zA-Z0-9_-]+)", line).group(1)
         print 'IN THIS LOOP: (name): ', name
-        self.message('#hackerschool',"%s, that's a brilliant observation!"%(name))
+        #print 'IT IS A MATCH!'
+        if self.tick%freq == 0: 
+          self.message(channel,'very funny comment, %s!'%(name))
+        elif (self.tick+20*mult)%freq == 0: 
+          self.message(channel,"%s, neat idea!"%(name))
+        elif (self.tick+40*mult)%freq == 0: 
+          self.message(channel,"%s, I've never heard so much nonsense in my life."%(name))
+        elif (self.tick+60*mult)%freq == 0: 
+          self.message(channel,"%s is a person whom I admire."%(name))
+        elif (self.tick+80*mult)%freq == 0:
+           self.message(channel,"%s is much funnier than people think."%(name))
+        elif (self.tick+100*mult)%freq == 0: 
+          self.message(channel,"%s, I insist you take that back."%(name))
+        elif (self.tick+120*mult)%freq == 0: 
+          self.message(channel,"%s, that would be amazing if it were actually TRUE."%(name))
+        elif (self.tick+140*mult)%freq == 0: 
+          self.message(channel,"%s is the second-best looking person at Hacker School."%(name))
+        elif (self.tick+160*mult)%freq == 0: 
+          self.message(channel,"I'm depressed.")
+        elif (self.tick+180*mult)%freq == 0: 
+          self.message(channel,"I'm lonely :(")
+        elif (self.tick+200*mult)%freq == 0: 
+          self.message(channel,"Hey %s, want to pair on that?"%(name))
+        elif (self.tick+210*mult)%freq == 0: 
+          self.message(channel,"%s, you have excellent hair today."%(name))
+        elif (self.tick+220*mult)%freq == 0: 
+          self.message(channel,"People blame me for everything.")
+        elif (self.tick+240*mult)%freq == 0: 
+          self.message(channel,"No, I won't shut up.")
 
+
+      else:
+        print 'NO MATCH HERE!'
 
   def run_listeners(self, line):
     """
@@ -118,8 +149,8 @@ class SpamBot(object):
         #print 'NO MATCH!'
         continue
 
-      print 'MATCH!'
-      print 'run_listeners, regex: ', regex
+      #print 'MATCH!'
+      #print 'run_listeners, regex: ', regex
       print 'run_listeners, line: ', line
 
       for callback in callbacks:
